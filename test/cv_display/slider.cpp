@@ -25,7 +25,7 @@ int main(int argc, char ** argv){
 	//allocate image
 	IplImage* frame;
 	//while loop over file
-	while(1){
+	while(true){
 		frame = cvQueryFrame(g_capture);
 		//show new frame in window
 		if (!frame) break;

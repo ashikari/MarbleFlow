@@ -1,38 +1,25 @@
-#include <cv.h>
-#include <highgui.h>
-
+#include <opencv2/opencv.hpp>
 #include <iostream>
 
+int main(int argc, char** argv){
+	cv::Mat in = cv::imread(argv[1], -1); // what does the "-1" do?
+	cv::Mat out;
 
-void smoother(IplImage* img, int nsmooths){
-	cvNamedWindow("Input_Image");
-	cvNamedWindow("Output_Image");
-	//display input image
-	cvShowImage("Input_Image", img);
+	cv::namedWindow("in", cv::WINDOW_AUTOSIZE);
+	cv::namedWindow("out",cv::WINDOW_AUTOSIZE );
 
-	// IplImage* out = cvCreateImage(cvGetSize(img), IPL_DEPTH_8U, 3);
-	// cvSmooth(img, out, CV_GAUSSIAN,3,3);
+	cv::imshow("in", in);
 
-	for(int i = 0; i<nsmooths; i++){
-		cvSmooth(img, img,CV_GAUSSIAN,3,3);
+	cv::GaussianBlur(in, out, cv::Size(5,5), 3, 3); // what do the parameters in the function mean?
+
+	for(int i = 0; i<std::stoi(argv[2])-1; i++){
+		cv::GaussianBlur(out, out, cv::Size(5,5), 3, 3);
 	}
 
-	//display output image
-	cvShowImage("Output_Image", img);
 
-	cvWaitKey(0);
-	cvReleaseImage(&img);
-	// cvReleaseImage(&out);
-	cvDestroyWindow("Input_Image");
-	cvDestroyWindow("Output_Image");
-}
+	cv::imshow("out", out);
+	cv::waitKey(0);
 
-
-int main(int argc, char** argv){
-	IplImage* img = cvLoadImage(argv[1]);
-	smoother(img, (int)(*argv[2]) );
-
-
-	cvReleaseImage(&img);
-	return 0;
+	cv::destroyWindow("in");
+	cv::destroyWindow("out");
 }

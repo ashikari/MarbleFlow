@@ -12,9 +12,16 @@ int main(int argc, char** argv){
 
 	cv::GaussianBlur(in, out, cv::Size(5,5), 3, 3); // what do the parameters in the function mean?
 
-	for(int i = 0; i<std::stoi(argv[2])-1; i++){
-		cv::GaussianBlur(out, out, cv::Size(5,5), 3, 3);
+	int blur_num = 1;
+
+	if(argc>2){
+		blur_num = std::stoi(argv[2]);
+		for(int i = 0; i<blur_num-1; i++){
+			cv::GaussianBlur(out, out, cv::Size(5,5), 3, 3);
+		}
 	}
+
+
 
 
 	cv::imshow("out", out);

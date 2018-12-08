@@ -1,33 +1,13 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
+const int NUM_BALLS = 2;
+
 static int rgb2hsv(int red, int grn, int blu);
+static int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame);
 
 int main(int argc, char** argv){
-	/*
-	using namespace cv;
-	// Read image
-	Mat im = imread( "blob.jpg", IMREAD_GRAYSCALE );
-	 
-	// Set up the detector with default parameters.
-	SimpleBlobDetector detector;
-	 
-	// Detect blobs.
-	std::vector<KeyPoint> keypoints;
-	detector.detect( im, keypoints);
-	 
-	// Draw detected blobs as red circles.
-	// DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures the size of the circle corresponds to the size of blob
-	Mat im_with_keypoints;
-	drawKeypoints( im, keypoints, im_with_keypoints, Scalar(0,0,255), DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
-	 
-	// Show blobs
-	imshow("keypoints", im_with_keypoints );
-	waitKey(0);
-	*/
-
-	// -------------------------------
-
+	// Declare VideoCapture object and open camera.
 	cv::VideoCapture cap;
 	if (argc == 1){
 		cap.open(0);
@@ -38,38 +18,45 @@ int main(int argc, char** argv){
 
 	cv::Mat frame, grayFrame;
 	cv::namedWindow("Cam", cv::WINDOW_AUTOSIZE);
+	bool calibrated = false;
+	int keypointHues[NUM_BALLS];
+	int hueBins[NUM_BALLS+2];
 	while(true){
 		cap>>frame;
 		
 		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
 
+		// Set up blob detection.
 		cv::SimpleBlobDetector::Params params;
-		// Change thresholds
 		params.minThreshold = 10;
 		params.maxThreshold = 200;
-		// Filter by Area.
 		params.filterByArea = true;
 		params.minArea = 1500;
-		// Filter by Circularity
 		params.filterByCircularity = true;
 		params.minCircularity = 0.1;
-		// Filter by Convexity
 		params.filterByConvexity = true;
 		params.minConvexity = 0.87;
-		// Filter by Inertia
 		params.filterByInertia = true;
 		params.minInertiaRatio = 0.01;
-		// Storage for blobs
 		std::vector<cv::KeyPoint> keypoints;
-		// Set up detector with params
 		cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);   
 
-		// Detect blobs
-		detector->detect( grayFrame, keypoints);
+		// Detect blobs.
+		detector->detect(grayFrame, keypoints);
 
-		// Draw detected blobs as red circles.
-		// DrawMatchesFlags::DRAW_RICH_KEYPOINTS flag ensures
-		// the size of the circle corresponds to the size of blob
+		// Calibrate ball colors
+		if (!calibrated && keypoints.size()==NUM_BALLS) {
+			for (int k=0;k<NUM_BALLS;k++) {
+				keypointHues[k] = getKeypointHue(keypoints[k], frame);
+			}
+			std::sort(keypointHues, keypointHues+sizeof(keypointHues)/sizeof(keypointHues[0]));
+			hueBins[0] = 0;
+			for (int b=0;b<NUM_BALLS-1;b++) {
+				hueBins[b+1] = (keypointHues[b]+keypointHues[b+1])/2;
+			}
+			hueBins[NUM_BALLS+1] = 255;
+		}
+		std::cout<<hueBins<<std::endl;
 
 		for (int k=0;k<keypoints.size();k++) {
 			cv::KeyPoint keyPt = keypoints[k];
@@ -121,6 +108,23 @@ int main(int argc, char** argv){
 	return 0;
 }
 
+int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame) {
+	cv::Point2f center = keyPt.pt;
+	int r = keyPt.size/2;
+
+	int blu=0,grn=0,red=0,pxls=0;
+	for (int x=-r;x<r;x++) {
+		for (int y=-std::sqrt(r*r-x*x);y<std::sqrt(r*r-x*x);y++) {
+			blu+=frame.at<cv::Vec3b>(center.y+y,center.x+x)[0];
+			grn+=frame.at<cv::Vec3b>(center.y+y,center.x+x)[1];
+			red+=frame.at<cv::Vec3b>(center.y+y,center.x+x)[2];
+			pxls++;
+		}
+	}
+	blu/=pxls;grn/=pxls;red/=pxls;
+	return rgb2hsv(red,grn,blu);
+}
+
 int rgb2hsv(int red, int grn, int blu)
 {
     double      min, max, delta;
@@ -164,8 +168,3 @@ int rgb2hsv(int red, int grn, int blu)
 
     return hue;
 }
-
-//purple: 250
-//red:    13
-//blue:   190
-//brown:  40

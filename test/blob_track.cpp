@@ -41,8 +41,6 @@ int main(int argc, char** argv){
 	
 	while(!calibrated){
 		cap>>frame;
-		for (int g=0;g<10;g++)
-			cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
 		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
 		detector->detect(grayFrame, keypoints);				// Detect blobs.
 
@@ -78,8 +76,6 @@ int main(int argc, char** argv){
 	
 	while (true) {
 		cap>>frame;
-		for (int g=0;g<10;g++)
-			cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
 		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
 		detector->detect(grayFrame, keypoints);				// Detect blobs.
 

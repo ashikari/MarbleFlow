@@ -105,7 +105,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES ros_prac
-#  CATKIN_DEPENDS roscpp rospy std_msgs
+#  CATKIN_DEPENDS roscpp rospy std_msgs actionlib sensor_msgs control_msgs trajectory_msgs cv_bridge dynamic_reconfigure intera_core_msgs intera_motion_msgs intera_interface
 #  DEPENDS system_lib
 )
 

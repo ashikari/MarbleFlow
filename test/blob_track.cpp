@@ -1,10 +1,13 @@
 #include <opencv2/opencv.hpp>
 #include <iostream>
 
+#define VERBOSE 1
+
 const int NUM_BALLS = 2;
 
 static int rgb2hsv(int red, int grn, int blu);
 static int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame);
+static cv::Vec3b hsv2rgb(int hue);
 
 int main(int argc, char** argv){
 	// Declare VideoCapture object and open camera.
@@ -20,29 +23,28 @@ int main(int argc, char** argv){
 	cv::namedWindow("Cam", cv::WINDOW_AUTOSIZE);
 	bool calibrated = false;
 	int keypointHues[NUM_BALLS];
-	int hueBins[NUM_BALLS+2];
-	while(true){
+	int hueBins[NUM_BALLS];
+	// Set up blob detection.
+	cv::SimpleBlobDetector::Params params;
+	params.minThreshold = 10;
+	params.maxThreshold = 200;
+	params.filterByArea = true;
+	params.minArea = 1500;
+	params.filterByCircularity = true;
+	params.minCircularity = 0.1;
+	params.filterByConvexity = true;
+	params.minConvexity = 0.87;
+	params.filterByInertia = true;
+	params.minInertiaRatio = 0.01;
+	std::vector<cv::KeyPoint> keypoints;
+	cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);   
+	
+	while(!calibrated){
 		cap>>frame;
-		
+		for (int g=0;g<10;g++)
+			cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
 		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
-
-		// Set up blob detection.
-		cv::SimpleBlobDetector::Params params;
-		params.minThreshold = 10;
-		params.maxThreshold = 200;
-		params.filterByArea = true;
-		params.minArea = 1500;
-		params.filterByCircularity = true;
-		params.minCircularity = 0.1;
-		params.filterByConvexity = true;
-		params.minConvexity = 0.87;
-		params.filterByInertia = true;
-		params.minInertiaRatio = 0.01;
-		std::vector<cv::KeyPoint> keypoints;
-		cv::Ptr<cv::SimpleBlobDetector> detector = cv::SimpleBlobDetector::create(params);   
-
-		// Detect blobs.
-		detector->detect(grayFrame, keypoints);
+		detector->detect(grayFrame, keypoints);				// Detect blobs.
 
 		// Calibrate ball colors
 		if (!calibrated && keypoints.size()==NUM_BALLS) {
@@ -50,19 +52,43 @@ int main(int argc, char** argv){
 				keypointHues[k] = getKeypointHue(keypoints[k], frame);
 			}
 			std::sort(keypointHues, keypointHues+sizeof(keypointHues)/sizeof(keypointHues[0]));
-			hueBins[0] = 0;
 			for (int b=0;b<NUM_BALLS-1;b++) {
-				hueBins[b+1] = (keypointHues[b]+keypointHues[b+1])/2;
+				hueBins[b] = (keypointHues[b]+keypointHues[b+1])/2;
 			}
-			hueBins[NUM_BALLS+1] = 255;
+			hueBins[NUM_BALLS-1] = 360;
+			calibrated = true;
 		}
-		std::cout<<hueBins<<std::endl;
+
+		if(frame.empty()){
+			break;
+		}
+		cv::imshow("Cam", frame);
+		if(cv::waitKey(33)>0){
+			break;
+		}
+	}
+
+	#ifdef VERBOSE
+	std::cout<<"Calibrated ball colors. Bins are: ";
+	for (int bin : hueBins) {
+		std::cout<<bin<<",";
+	}
+	std::cout<<std::endl;
+	#endif
+	
+	while (true) {
+		cap>>frame;
+		for (int g=0;g<10;g++)
+			cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
+		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
+		detector->detect(grayFrame, keypoints);				// Detect blobs.
 
 		for (int k=0;k<keypoints.size();k++) {
 			cv::KeyPoint keyPt = keypoints[k];
 			cv::Point2f center = keyPt.pt;
 			int r = keyPt.size/2;
 
+			// Determine average hue of each ball
 			int blu=0,grn=0,red=0,pxls=0;
 			for (int x=-r;x<r;x++) {
 				for (int y=-std::sqrt(r*r-x*x);y<std::sqrt(r*r-x*x);y++) {
@@ -74,25 +100,24 @@ int main(int argc, char** argv){
 			}
 			blu/=pxls;grn/=pxls;red/=pxls;
 			int hue = rgb2hsv(red,grn,blu);
-			cv::Vec3b val;
-			if (hue<27) {
-				val = cv::Vec3b(0,0,255);
-			} else if (hue<115) {
-				val = cv::Vec3b(42,42,165);
-			} else if (hue<220) {
-				val = cv::Vec3b(255,0,0);
-			} else {
-				val = cv::Vec3b(255,0,255);
-			}
-			for (int x=-r;x<r;x++) {
-				for (int y=-std::sqrt(r*r-x*x);y<std::sqrt(r*r-x*x);y++) {
-					frame.at<cv::Vec3b>(center.y+y,center.x+x) = val;
+			
+			// Classify object
+			int ballColor;
+			for (int b=0;b<NUM_BALLS;b++) {
+				if (hue<=hueBins[b]) {
+					ballColor = b;
+					break;
 				}
 			}
 
-			//std::cout<<k<<","<<val<<",";
+			// Draw classification over object in image
+			cv::Vec3b ballColorVec = hsv2rgb(keypointHues[ballColor]);
+			for (int x=-r;x<r;x++) {
+				for (int y=-std::sqrt(r*r-x*x);y<std::sqrt(r*r-x*x);y++) {
+					frame.at<cv::Vec3b>(center.y+y,center.x+x) = ballColorVec;
+				}
+			}
 		}
-		//std::cout<<std::endl;
 
 		if(frame.empty()){
 			break;
@@ -167,4 +192,56 @@ int rgb2hsv(int red, int grn, int blu)
         hue += 360.0;
 
     return hue;
+}
+
+cv::Vec3b hsv2rgb(int hue)
+{
+    double      hh, p, q, t, ff;
+    long        i;
+    cv::Vec3b   out;
+
+    hh = hue;
+    if(hh >= 360.0) hh = 0.0;
+    hh /= 60.0;
+    i = (long)hh;
+    ff = hh - i;
+    p = 0.0;
+    q = 255*(1.0 - ff);
+    t = 255*(1.0 - (1.0 - ff));
+
+    switch(i) {
+	    case 0:
+	        out[2] = 255;
+	        out[1] = t;
+	        out[0] = p;
+	        break;
+	    case 1:
+	        out[2] = q;
+	        out[1] = 255;
+	        out[0] = p;
+	        break;
+	    case 2:
+	        out[2] = p;
+	        out[1] = 255;
+	        out[0] = t;
+	        break;
+
+	    case 3:
+	        out[2] = p;
+	        out[1] = q;
+	        out[0] = 255;
+	        break;
+	    case 4:
+	        out[2] = t;
+	        out[1] = p;
+	        out[0] = 255;
+	        break;
+	    case 5:
+	    default:
+	        out[2] = 255;
+	        out[1] = p;
+	        out[0] = q;
+	        break;
+    }
+    return out;
 }

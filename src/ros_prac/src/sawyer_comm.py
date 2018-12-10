@@ -6,36 +6,58 @@ import navigator
 import math
 import intera_interface 
 import threading
-from std_msgs.msg import (
-	String,
-	Int32,
-	Float64,
-	Float64MultiArray,
-	UInt16
-)
+from std_msgs.msg import Int32MultiArray
+import numpy as np
+from sawyer_pykdl import sawyer_kinematics
+
+VERBOSE = 0
 
 class listener():
 	## INITIALIZE ROS AND SAWYER ##
 	def __init__(self):
 		# Subscribing topics
-		rospy.Subscriber('/chatter', String, self.rx_pos_error)
+		rospy.Subscriber('/ball_talk', Int32MultiArray, self.rx_pos_error)
+
+		# Instance Variables
+		self.P_gain = 1e-5;
+		self.I_gain = 0;
+		self.D_gain = 0;
+		self.int_err_x = 0;
+		self.int_err_y = 0;
+		self.last_err_x = 0;
+		self.last_err_y = 0;
 		
 		# Initialize Sawyer
-		rospy.init_node('Sawyer_Sparrow_comm_node', anonymous=True)
+		rospy.init_node('sawyer_comm', anonymous=True)
 		self.limb = intera_interface.Limb('right')
+		self.kin = sawyer_kinematics('right')
 		navigator.right()
 
-	# Publishes message to ROSTopic to be receieved by JavaScript
-	def pub_cmd(self, cmd):
-		msg = Int32()
-		msg.data = cmd
-		self.cmd2browser.publish(msg)
-		if verbose: rospy.loginfo("I sent: " + str(cmd))
-
-	## LISTENER EVENTS ##
-	# Runs whenever message is received on main ROSTopic from JavaScript
 	def rx_pos_error(self, msg):
-		print(msg.data)
+		# Extract message contents
+		if VERBOSE:
+			print('I received: ' + str(msg.data[0]) + ',' + str(msg.data[1]))
+		err_x = msg.data[0];
+		err_y = msg.data[1];
+
+		# Update errors
+		self.int_err_x+=err_x;
+		self.int_err_y+=err_y;
+		der_err_x = self.last_err_x-err_x
+		der_err_y = self.last_err_y-err_y
+		self.last_err_x = err_x
+		self.last_err_y = err_y
+
+		# Calculate endpoint velocity
+		ctrl = np.array([self.P_gain*err_x+self.I_gain*self.int_err_x+self.D_gain*der_err_x, self.P_gain*err_y+self.I_gain*self.int_err_y+self.D_gain*der_err_y, 0, 0, 0, 0])
+
+		# Calculate joint velocities from inverse kinematics
+		q = np.matmul(self.kin.jacobian_pseudo_inverse(),ctrl)
+		if VERBOSE:
+			print('\nq = ' + str(q))
+
+		# Send joint velocity command to Sawyer
+		# self.limb.set_joint_velocities(q)
 
 if __name__ == '__main__':
 	listener()

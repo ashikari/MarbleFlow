@@ -5,9 +5,9 @@
 
 const int NUM_BALLS = 2;
 
-static int rgb2hsv(int red, int grn, int blu);
-static int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame);
-static cv::Vec3b hsv2rgb(int hue);
+int rgb2hsv(int red, int grn, int blu);
+int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame);
+cv::Vec3b hsv2rgb(int hue);
 
 int main(int argc, char** argv){
 	// Declare VideoCapture object and open camera.

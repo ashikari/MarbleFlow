@@ -27,20 +27,22 @@ int main(int argc, char** argv){
 
 
 	//Create Windows:
-	cv::namedWindow("Cam", cv::WINDOW_AUTOSIZE);
+	cv::namedWindow("Calibration", cv::WINDOW_AUTOSIZE);
 
 	//Create tracker
 	cv::Ptr<cv::SimpleBlobDetector> detector = create_tracker();
 
 	// bool calibrated = false;
-	int NUM_BALLS = 1;
+	int NUM_BALLS = 4;
 	int keypointHues[NUM_BALLS];
 	int hueBins[NUM_BALLS];
 
 	//perform calibration
 	calibrate(cap, detector, NUM_BALLS, keypointHues, hueBins);
 
-	
+	cv::destroyWindow("Calibration");
+	cv::namedWindow("Cam", cv::WINDOW_AUTOSIZE);
+
 	std::vector<cv::KeyPoint> keypoints;
 
 
@@ -59,12 +61,9 @@ int main(int argc, char** argv){
 		if(frame.empty()){
 			break;
 		}
+		std::cout<<frame.size()<<std::endl;
 
-		// for (int g=0;g<10;g++){
-		// 	// cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
-		// }
-		cv::erode(frame, frame, element,cv::Point(-1,-1), 10);
-		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
+		preprocess(frame,grayFrame);
 		detector->detect(grayFrame, keypoints);				// Detect blobs.
 
 		for (int k=0;k<keypoints.size();k++) {

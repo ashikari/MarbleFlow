@@ -6,28 +6,47 @@ cv::Vec3b hsv2rgb(int hue);
 //Create Blob Tracker
 cv::Ptr<cv::SimpleBlobDetector> create_tracker(){
     cv::SimpleBlobDetector::Params params;
-    params.minThreshold = 10;
-    params.maxThreshold = 200;
+    params.minThreshold = 1;
+    params.maxThreshold = 255;
     params.filterByArea = true;
-    params.minArea = 1500;
-    params.filterByCircularity = true;
-    params.minCircularity = 0.1;
-    params.filterByConvexity = true;
-    params.minConvexity = 0.87;
+    params.minArea = 500;
+    params.minDistBetweenBlobs = 30;
+    // params.filterByCircularity = true;
+    // params.minCircularity = 0.1;
+    // params.filterByConvexity = true;
+    // params.minConvexity = 0.6;
     params.filterByInertia = true;
     params.minInertiaRatio = 0.01;
     return cv::SimpleBlobDetector::create(params);
 }
 
+int dilation_size = 1;
+cv::Mat element = cv::getStructuringElement( cv::MORPH_RECT,
+                    cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                    cv::Point( dilation_size, dilation_size ) );
+
+
+
+void preprocess(cv::Mat& frame, cv::Mat& grayFrame){
+        cv::GaussianBlur(frame, grayFrame, cv::Size(5,5), 3, 3);
+        cv::dilate(grayFrame, grayFrame, element,cv::Point(-1,-1), 10);
+        cv::GaussianBlur(grayFrame, grayFrame, cv::Size(5,5), 3, 3);
+        cv::erode(grayFrame, grayFrame, element, cv::Point(-1,-1), 10);
+        cv::GaussianBlur(grayFrame, grayFrame, cv::Size(5,5), 3, 3);
+        cv::cvtColor(grayFrame, grayFrame, cv::COLOR_BGR2GRAY);
+        // cv::bitwise_not(grayFrame, grayFrame);
+}
+
+
 void calibrate(cv::VideoCapture& cap, cv::Ptr<cv::SimpleBlobDetector>& detector, const int& NUM_BALLS,  int keypointHues[], int hueBins[] ){
     cv::Mat frame, grayFrame;
     std::vector<cv::KeyPoint> keypoints;
 
+    
+
     while(true){
         cap>>frame;
-        for (int g=0;g<10;g++)
-            cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
-        cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
+        preprocess(frame,grayFrame);
         detector->detect(grayFrame, keypoints);             // Detect blobs.
 
         // Calibrate ball colors
@@ -43,6 +62,8 @@ void calibrate(cv::VideoCapture& cap, cv::Ptr<cv::SimpleBlobDetector>& detector,
             break;
         }
 
+
+        cv::imshow("Calibration", grayFrame);
         if(frame.empty()){
             break;
         }
@@ -50,6 +71,8 @@ void calibrate(cv::VideoCapture& cap, cv::Ptr<cv::SimpleBlobDetector>& detector,
         if(cv::waitKey(33)>0){
             break;
         }
+
+    
     }
 }
 

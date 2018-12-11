@@ -1,15 +1,23 @@
 #include <opencv2/opencv.hpp>
+#include "ros/ros.h"
+#include "std_msgs/Int32MultiArray.h"
 #include <iostream>
 
 #define VERBOSE 1
 
 const int NUM_BALLS = 2;
 
-int rgb2hsv(int red, int grn, int blu);
-int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame);
-cv::Vec3b hsv2rgb(int hue);
+static int rgb2hsv(int red, int grn, int blu);
+static int getKeypointHue(cv::KeyPoint keyPt, cv::Mat frame);
+static cv::Vec3b hsv2rgb(int hue);
 
 int main(int argc, char** argv){
+	// ROS Setup
+	ros::init(argc, argv, "camera");
+	ros::NodeHandle n;
+	ros::Publisher ball_pub = n.advertise<std_msgs::Int32MultiArray>("/ball_talk", 1000);
+	ros::Rate loop_rate(10);
+
 	// Declare VideoCapture object and open camera.
 	cv::VideoCapture cap;
 	if (argc == 1){
@@ -67,11 +75,17 @@ int main(int argc, char** argv){
 	}
 
 	#ifdef VERBOSE
-	std::cout<<"Calibrated ball colors. Bins are: ";
+	std::cout<<"Calibrated ball colors. Bins are: 0-";
 	for (int bin : hueBins) {
-		std::cout<<bin<<",";
+		std::cout<<bin<<"-";
 	}
 	std::cout<<std::endl;
+	std::cout<<"Ball hues are: ";
+	for (int hue : keypointHues) {
+		std::cout<<hue<<",";
+	}
+	std::cout<<std::endl;
+
 	#endif
 	
 	while (true) {
@@ -114,6 +128,20 @@ int main(int argc, char** argv){
 				}
 			}
 		}
+		
+		// Calculate Error from Ball 0
+		cv::KeyPoint keyPt = keypoints[0];
+		cv::Point2f center = keyPt.pt;
+		int r = keyPt.size/2;
+		int err_x = center.x-frame.rows/2;
+		int err_y = center.y-frame.cols/2;
+		std_msgs::Int32MultiArray msg;
+	    std::vector<int> data;
+	    data.push_back(err_x);
+	    data.push_back(err_y);
+	    msg.data = data;
+	    ball_pub.publish(msg);
+	    ros::spinOnce();
 
 		if(frame.empty()){
 			break;

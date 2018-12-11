@@ -30,7 +30,7 @@ int main(int argc, char** argv){
 
 	cv::Mat frame;
 
-	int dilation_size = 2;
+	int dilation_size = 1;
 	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE,
                        cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
                        cv::Point( dilation_size, dilation_size ) );

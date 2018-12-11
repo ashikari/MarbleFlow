@@ -75,11 +75,17 @@ int main(int argc, char** argv){
 	}
 
 	#ifdef VERBOSE
-	std::cout<<"Calibrated ball colors. Bins are: ";
+	std::cout<<"Calibrated ball colors. Bins are: 0-";
 	for (int bin : hueBins) {
-		std::cout<<bin<<",";
+		std::cout<<bin<<"-";
 	}
 	std::cout<<std::endl;
+	std::cout<<"Ball hues are: ";
+	for (int hue : keypointHues) {
+		std::cout<<hue<<",";
+	}
+	std::cout<<std::endl;
+
 	#endif
 	
 	while (true) {

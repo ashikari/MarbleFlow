@@ -20,7 +20,7 @@ int main(int argc, char** argv){
 
 	//open camera capture
 	cv::VideoCapture cap;
-	cap.open(0);
+	cap.open(1);
 
 	cv::Mat frame, grayFrame;
 	cap>>frame;
@@ -49,14 +49,21 @@ int main(int argc, char** argv){
 	//perform blob tracking
 	
 
+	int dilation_size = 1;
+	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE,
+                       cv::Size( 2*dilation_size + 1, 2*dilation_size+1 ),
+                       cv::Point( dilation_size, dilation_size ) );
+
 	while (true) {
 		cap>>frame;
 		if(frame.empty()){
 			break;
 		}
 
-		for (int g=0;g<10;g++)
-			cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
+		// for (int g=0;g<10;g++){
+		// 	// cv::GaussianBlur(frame, frame, cv::Size(5,5), 3, 3);
+		// }
+		cv::erode(frame, frame, element,cv::Point(-1,-1), 10);
 		cv::cvtColor(frame, grayFrame, cv::COLOR_BGR2GRAY);
 		detector->detect(grayFrame, keypoints);				// Detect blobs.
 

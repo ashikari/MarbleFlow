@@ -10,7 +10,7 @@ from std_msgs.msg import Int32MultiArray
 import numpy as np
 from sawyer_pykdl import sawyer_kinematics
 
-VERBOSE = 0
+VERBOSE = 1
 
 class listener():
 	## INITIALIZE ROS AND SAWYER ##

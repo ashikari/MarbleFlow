@@ -15,7 +15,8 @@ int main(int argc, char** argv){
 	// ROS Setup
 	ros::init(argc, argv, "camera");
 	ros::NodeHandle n;
-	ros::Publisher pos_pub = n.advertise<std_msgs::Int32MultiArray>("/ball_pos", 1000);
+	ros::Publisher ball_pub = n.advertise<std_msgs::Int32MultiArray>("/ball_talk", 1000);
+	ros::Rate loop_rate(10);
 
 	// Declare VideoCapture object and open camera.
 	cv::VideoCapture cap;
@@ -121,6 +122,20 @@ int main(int argc, char** argv){
 				}
 			}
 		}
+		
+		// Calculate Error from Ball 0
+		cv::KeyPoint keyPt = keypoints[0];
+		cv::Point2f center = keyPt.pt;
+		int r = keyPt.size/2;
+		int err_x = center.x-frame.rows/2;
+		int err_y = center.y-frame.cols/2;
+		std_msgs::Int32MultiArray msg;
+	    std::vector<int> data;
+	    data.push_back(err_x);
+	    data.push_back(err_y);
+	    msg.data = data;
+	    ball_pub.publish(msg);
+	    ros::spinOnce();
 
 		if(frame.empty()){
 			break;

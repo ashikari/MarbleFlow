@@ -36,9 +36,8 @@ int main()
    		//Get each frame
    		frames = pipe.wait_for_frames();
     	rs2::frame color_frame = frames.get_color_frame();
-
     	// Creating OpenCV Matrix from a color image
-    	Mat color(Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), Mat::AUTO_STEP);
+    	cv::Mat color(cv::Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), cv::Mat::AUTO_STEP);
 
     	// Display in a GUI
     	imshow("Display Image", color);

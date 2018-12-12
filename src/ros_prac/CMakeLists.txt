@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 find_package(OpenCV REQUIRED)
+find_package(realsense2 REQUIRED)
 
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
@@ -59,5 +60,5 @@ target_link_libraries(send_ball_pos ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(send_ball_pos opencv)
 
 add_executable(blob_error_pub src/blob_error_pub.cpp)
-target_link_libraries(blob_error_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(blob_error_pub opencv)
+target_link_libraries(blob_error_pub ${catkin_LIBRARIES} ${OpenCV_LIBS} ${realsense2_LIBRARY})
+add_dependencies(blob_error_pub opencv realsense2)

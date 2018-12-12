@@ -1,4 +1,5 @@
 #include <opencv2/opencv.hpp>
+#include <librealsense2/rs.hpp>
 #include "ros/ros.h"
 #include "std_msgs/Int32MultiArray.h"
 #include <iostream>
@@ -12,15 +13,30 @@ int main(int argc, char** argv){
 	std_msgs::Int32MultiArray msg;
 	ros::Rate loop_rate(10);
 
-	// Open camera capture
-	cv::VideoCapture cap;
-	cap.open(1);
+	// Open realsense camera
+    //Contruct a pipeline which abstracts the device
+    rs2::pipeline pipe;
 
+    //Create a configuration for configuring the pipeline with a non default profile
+    rs2::config cfg;
+
+    //Add desired streams to configuration
+    cfg.enable_stream(RS2_STREAM_COLOR, 640, 480, RS2_FORMAT_BGR8, 30);
+
+    //Instruct pipeline to start streaming with the requested configuration
+    pipe.start(cfg);
+
+    // Camera warmup - dropping several first frames to let auto-exposure stabilize
+    rs2::frameset frames;
+    for(int i = 0; i < 30; i++)
+    {
+        //Wait for all configured streams to produce a frame
+        frames = pipe.wait_for_frames();
+    }
+
+	rs2::frame color_frame = frames.get_color_frame();
 	cv::Mat frame, grayFrame;
-	cap>>frame;
-
-	// Create Windows
-	cv::namedWindow("Calibration", cv::WINDOW_AUTOSIZE);
+	frame = cv::Mat(cv::Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), cv::Mat::AUTO_STEP);
 
 	// Create tracker
 	cv::Ptr<cv::SimpleBlobDetector> detector = create_tracker();
@@ -30,10 +46,6 @@ int main(int argc, char** argv){
 	int keypointHues[NUM_BALLS];
 	int hueBins[NUM_BALLS];
 
-	// Perform calibration
-	//calibrate(cap, detector, NUM_BALLS, keypointHues, hueBins);
-
-	cv::destroyWindow("Calibration");
 	cv::namedWindow("Cam", cv::WINDOW_AUTOSIZE);
 
 	std::vector<cv::KeyPoint> keypoints;
@@ -48,7 +60,12 @@ int main(int argc, char** argv){
                        cv::Point( dilation_size, dilation_size ) );
 
 	while (true) {
-		cap>>frame;
+		//Get each frame
+   		frames = pipe.wait_for_frames();
+    	color_frame = frames.get_color_frame();
+
+    	// Creating OpenCV Matrix from a color image
+    	frame = cv::Mat(cv::Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), cv::Mat::AUTO_STEP);
 		if(frame.empty()){
 			break;
 		}
@@ -113,7 +130,7 @@ int main(int argc, char** argv){
 
 		// frame = grayFrame;
 		cv::imshow("Cam", frame);
-		if(cv::waitKey(33)>0){
+		if(cv::waitKey(10)>0){
 			break;
 		}
 	}

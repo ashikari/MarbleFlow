@@ -37,12 +37,45 @@ class listener():
 		for j in range(0,7):
 			q[j] = joint_angles['right_j' + str(j)]
 		print(np.matmul(self.kin.jacobian(),q))
-		self.lastTime = rospy.get_time()
-
+		if VERBOSE:
+			self.lastTime = rospy.get_time()
+		
+		
+		# Debugging
+		s = 0.1
+		self.limb.set_command_timeout(2)
+		rate = rospy.Rate(20)
+		x = np.array([s,0,0,0,0,0]);
+		while self.limb.endpoint_pose()['position'][0]<0.25:
+			self.set_endpoint_velocity(x)
+			rate.sleep()
+		x = np.array([0,-s,0,0,0,0]);
+		while self.limb.endpoint_pose()['position'][1]>0.46:
+			self.set_endpoint_velocity(x)
+			rate.sleep()
+		x = np.array([-s,0,0,0,0,0]);
+		while self.limb.endpoint_pose()['position'][0]>-0.1632:
+			self.set_endpoint_velocity(x)
+			rate.sleep()
+		x = np.array([0,s,0,0,0,0]);
+		while self.limb.endpoint_pose()['position'][1]<0.71755:
+			self.set_endpoint_velocity(x)
+			rate.sleep()
+		x = np.array([0,0,0,0,0,0]);
+		self.set_endpoint_velocity(x)
+		
+	
 		# Subscribing topics
 		rospy.Subscriber('/ball_error', Int32MultiArray, callback=self.rx_pos_error, queue_size=1)
 
 		navigator.right()
+
+	def set_endpoint_velocity(self, x):
+		q = np.matmul(self.kin.jacobian_pseudo_inverse(),x)
+		q_send = self.limb.joint_velocities();
+		for j in range(0,7):
+			q_send['right_j' + str(j)] = q[0,j];
+		self.limb.set_joint_velocities(q_send)
 
 	def rx_pos_error(self, msg):
 		self.limb.set_command_timeout(1)

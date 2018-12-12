@@ -32,11 +32,12 @@ int main(int argc, char**argv){
     while(true){
     	cap>>frame;
     	cv::cvtColor(frame, greyframe, cv::COLOR_BGR2GRAY);
-    	cv::GaussianBlur(greyframe,greyframe,cv::Size(5,5),4,4);
+    	cv::GaussianBlur(greyframe,greyframe,cv::Size(5,5),5,5);
     	if (~prevgrey.empty()){
     		avg_flow(greyframe,prevgrey,flow);
     		cv::circle(img, pt, 2, cv::Scalar(0,0,255), CV_FILLED);
     		pt = pt + flow*7.5/640.0*17;
+
     		std::cout<<pt<<" "<< flow<<std::endl;
     	}
     	writer<<img;

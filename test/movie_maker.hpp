@@ -24,7 +24,7 @@ cv::Mat boarder(){
     //lengths of the stage
     //scale to pixels
     int inch = inch2Pixel(1);
-    int s_width = inch2Pixel(32);
+    int s_width = inch2Pixel(23.5);
     int s_height = inch2Pixel(36);
     cv::Point2i center(1280/2, 720/2);
     cv::Point2i pt1 = center - cv::Point2i(s_width/2+inch, s_height/2+inch);

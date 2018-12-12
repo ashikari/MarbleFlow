@@ -36,11 +36,10 @@ int main(int argc, char**argv){
     	if (~prevgrey.empty()){
     		avg_flow(greyframe,prevgrey,flow);
     		cv::circle(img, pt, 2, cv::Scalar(0,0,255), CV_FILLED);
-    		pt = pt + flow*1;
+    		pt = pt + flow*7.5/640.0*17;
     		std::cout<<pt<<" "<< flow<<std::endl;
     	}
     	writer<<img;
-
 
     	cv::line(frame, cv::Point(frame.cols/2, frame.rows/2),
 				 cv::Point(cvRound(frame.cols/2+ 20*flow.x),  cvRound(frame.rows/2 + 20*flow.y) ),

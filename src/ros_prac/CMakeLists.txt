@@ -57,3 +57,7 @@ add_dependencies(listener beginner_tutorials_generate_messages_cpp)
 add_executable(send_ball_pos src/send_ball_pos.cpp)
 target_link_libraries(send_ball_pos ${catkin_LIBRARIES} ${OpenCV_LIBS})
 add_dependencies(send_ball_pos opencv)
+
+add_executable(blob_error_pub src/blob_error_pub.cpp)
+target_link_libraries(blob_error_pub ${catkin_LIBRARIES} ${OpenCV_LIBS})
+add_dependencies(blob_error_pub opencv)

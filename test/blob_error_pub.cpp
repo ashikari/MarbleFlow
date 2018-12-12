@@ -1,35 +1,28 @@
 #include <opencv2/opencv.hpp>
+#include "ros/ros.h"
+#include "std_msgs/Int32MultiArray.h"
 #include <iostream>
 #include "blob_tracker.hpp"
 
-
-// #include "ros/ros.h"
-// #include "std_msgs/Int32MultiArray"
-
-
 int main(int argc, char** argv){
+	// Setup ROS
+	ros::init(argc, argv, "ballz_tracker");
+	ros::NodeHandle ballz_tracker;
+	ros::Publisher error_pub = ballz_tracker.advertise<std_msgs::Int32MultiArray>("ball_error", 1);
+	std_msgs::Int32MultiArray msg;
+	ros::Rate loop_rate(10);
 
-	//setup ROS
-	// ros::init(argc, argv, "ball_error");
-	// ros::NodeHandle ball_error;
-	// ros::Publisher error_pub = n.advertise<std_msgs::Int32MultiArray>("ball_error", 1);
-	// std_msgs::Int32MultiArray msg;
-	// ros::Rate loop_rate(10);
-
-
-
-	//open camera capture
+	// Open camera capture
 	cv::VideoCapture cap;
 	cap.open(1);
 
 	cv::Mat frame, grayFrame;
 	cap>>frame;
 
-
-	//Create Windows:
+	// Create Windows
 	cv::namedWindow("Calibration", cv::WINDOW_AUTOSIZE);
 
-	//Create tracker
+	// Create tracker
 	cv::Ptr<cv::SimpleBlobDetector> detector = create_tracker();
 
 	// bool calibrated = false;
@@ -37,7 +30,7 @@ int main(int argc, char** argv){
 	int keypointHues[NUM_BALLS];
 	int hueBins[NUM_BALLS];
 
-	//perform calibration
+	// Perform calibration
 	calibrate(cap, detector, NUM_BALLS, keypointHues, hueBins);
 
 	cv::destroyWindow("Calibration");
@@ -47,9 +40,7 @@ int main(int argc, char** argv){
 
 
 	cv::Point2f error;
-	cv::Point2f img_center(frame.cols/2.0, frame.rows/2.0);
-	//perform blob tracking
-	
+	cv::Point2f img_center(frame.cols/2.0, frame.rows/2.0);	
 
 	int dilation_size = 1;
 	cv::Mat element = cv::getStructuringElement( cv::MORPH_ELLIPSE,
@@ -98,32 +89,23 @@ int main(int argc, char** argv){
 			cv::circle(frame, center,r,cv::Scalar(ballColorVec),CV_FILLED);
 			cv::arrowedLine(frame, center, img_center, cv::Scalar(ballColorVec), 5);
 
-
 			error = img_center - center;
-
-			//publish the ros message and spin
-			// msg.data.clear()
-			// msg.data[0] = error.x;
-			// msg.data[1] = error.y;
-			// error_pub.publish(msg);
-	     	// ros::spinOnce();
 		}
 
-
-
-
+		error = img_center - keypoints[0].pt;
+		//publish the ros message and spin
+		msg.data.clear()
+		msg.data[0] = error.x;
+		msg.data[1] = error.y;
+		error_pub.publish(msg);
+     	ros::spinOnce();
 
 		cv::imshow("Cam", frame);
 		if(cv::waitKey(33)>0){
 			break;
 		}
-
 	}
 
 	cv::destroyWindow("Cam");
 	return 0;
-
-
-
-
 }

@@ -130,7 +130,7 @@ int main(int argc, char** argv){
 
 		// frame = grayFrame;
 		cv::imshow("Cam", frame);
-		if(cv::waitKey(10)>0){
+		if(cv::waitKey(1)>0){
 			break;
 		}
 	}

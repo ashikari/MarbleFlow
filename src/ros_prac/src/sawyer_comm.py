@@ -18,11 +18,13 @@ class listener():
 	## INITIALIZE ROS AND SAWYER ##
 	def __init__(self):
 		# Instance Variables
-		self.P_gain = 1.25e-3;
+		self.P_gain = 2e-3;
 		self.I_gain = 0;
 		self.D_gain = 0;
 		self.int_err_x = 0;
 		self.int_err_y = 0;
+		self.x_bnd = [-0.27,0.38]
+		self.y_bnd = [0.35,0.85]
 		self.last_err_x = 0;
 		self.last_err_y = 0;
 		
@@ -30,21 +32,18 @@ class listener():
 		rospy.init_node('sawyer_comm', anonymous=True)
 		self.limb = intera_interface.Limb('right')
 		self.kin = sawyer_kinematics('right')
-		joint_positions = go_to.joint_angle_arg(joint_angles = [math.pi/2, -math.pi/4, 0, math.pi/2-0.3, 0, math.pi/4+0.3, 2.46 ], speed_ratio = .225, accel_ratio = 0.1)
+
+		joint_positions = go_to.joint_angle_arg(joint_angles = [math.pi/2, -math.pi/3, 0, 2*math.pi/3, 0, -math.pi/3, 0.57], speed_ratio = .225, accel_ratio = 0.1)
 		go_to.joint_angles(joint_positions)
-		joint_angles = self.limb.joint_angles()
-		q = np.zeros(7)
-		for j in range(0,7):
-			q[j] = joint_angles['right_j' + str(j)]
-		print(np.matmul(self.kin.jacobian(),q))
+		self.start_pose = self.limb.endpoint_pose();
 		if VERBOSE:
 			self.lastTime = rospy.get_time()
 		
-		
-		# Debugging
+		'''
+		# Debug: move in a square
 		s = 0.1
 		self.limb.set_command_timeout(2)
-		rate = rospy.Rate(20)
+		rate = rospy.Rate(100)
 		x = np.array([s,0,0,0,0,0]);
 		while self.limb.endpoint_pose()['position'][0]<0.25:
 			self.set_endpoint_velocity(x)
@@ -54,16 +53,16 @@ class listener():
 			self.set_endpoint_velocity(x)
 			rate.sleep()
 		x = np.array([-s,0,0,0,0,0]);
-		while self.limb.endpoint_pose()['position'][0]>-0.1632:
+		while self.limb.endpoint_pose()['position'][0]>-0.1658:
 			self.set_endpoint_velocity(x)
 			rate.sleep()
 		x = np.array([0,s,0,0,0,0]);
-		while self.limb.endpoint_pose()['position'][1]<0.71755:
+		while self.limb.endpoint_pose()['position'][1]<0.7206:
 			self.set_endpoint_velocity(x)
 			rate.sleep()
 		x = np.array([0,0,0,0,0,0]);
 		self.set_endpoint_velocity(x)
-		
+		'''
 	
 		# Subscribing topics
 		rospy.Subscriber('/ball_error', Int32MultiArray, callback=self.rx_pos_error, queue_size=1)
@@ -82,8 +81,8 @@ class listener():
 		# Extract message contents
 		if VERBOSE:
 			print('\nI received: ' + str(msg.data[0]) + ',' + str(msg.data[1]))
-		err_x = -msg.data[1];
-		err_y = -msg.data[0];
+		err_x = -msg.data[0];
+		err_y = msg.data[1];
 
 		# Update errors
 		self.int_err_x+=err_x;
@@ -96,13 +95,20 @@ class listener():
 		# Calculate endpoint velocity
 		ctrl = np.array([self.P_gain*err_x+self.I_gain*self.int_err_x+self.D_gain*der_err_x, self.P_gain*err_y+self.I_gain*self.int_err_y+self.D_gain*der_err_y, 0, 0, 0, 0])
 
+		# TODO: Correct for drift in z position and endpoint orientation
+		'''
+		this_pose = self.limb.endpoint_pose();
+		dx = np.array([0, 0, start_pose['position'][2]-self.limb.endpoint_pose()['position'][2], start_pose['orientation']
+		ctrl+= 0.5*dx
+		'''
+
 		# Calculate joint velocities from inverse kinematics
 		inv_J = self.kin.jacobian_pseudo_inverse()
 		if (la.norm(inv_J, 'fro')>90):
 			print('NEAR SINGULAR')
 			rospy.signal_shutdown('Quit')
 		endpoint_pos = self.limb.endpoint_pose()['position'];
-		if (endpoint_pos[0]>0.69 or endpoint_pos[0]<-0.27 or endpoint_pos[1]>0.85 or endpoint_pos[1]<0.31):
+		if (endpoint_pos[0]>self.x_bnd[1] or endpoint_pos[0]<self.x_bnd[0] or endpoint_pos[1]>self.y_bnd[1] or endpoint_pos[1]<self.y_bnd[0]):
 			print('AT BOUNDARY')
 			rospy.signal_shutdown('Quit')
 		q = np.matmul(inv_J,ctrl)

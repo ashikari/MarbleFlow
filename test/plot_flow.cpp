@@ -61,7 +61,7 @@ int main(int argc, char**argv){
     	frame = cv::Mat(cv::Size(640, 480), CV_8UC3, (void*)color_frame.get_data(), cv::Mat::AUTO_STEP);
 
     	cv::cvtColor(frame, greyframe, cv::COLOR_BGR2GRAY);
-    	cv::GaussianBlur(greyframe,greyframe,cv::Size(5,5),5,5);
+    	cv::GaussianBlur(greyframe,greyframe,cv::Size(5,5),7,7);
     	if (~prevgrey.empty()){
     		avg_flow(greyframe,prevgrey,flow);
     		cv::circle(img, pt, 2, cv::Scalar(0,0,255), CV_FILLED);
@@ -78,7 +78,7 @@ int main(int argc, char**argv){
     	greyframe.copyTo(prevgrey);
     	cv::imshow("Display", img);
     	cv::imshow("Cam",frame);
-    	if( cv::waitKey( round( dt*1000 ) )>0){
+    	if( cv::waitKey( 1 )>0){
     		break;
     	}
     }

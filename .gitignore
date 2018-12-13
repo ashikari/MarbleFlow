@@ -59,3 +59,4 @@ src/intera_common/
 src/intera_sdk/
 src/sawyer_pykdl/
 src/sawyer_robot/
+intera.sh

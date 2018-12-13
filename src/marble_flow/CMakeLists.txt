@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(ros_prac)
+project(marble_flow)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++11)
@@ -46,18 +46,6 @@ include_directories(
 # include
   ${catkin_INCLUDE_DIRS}
 )
-
-add_executable(talker src/talker.cpp)
-target_link_libraries(talker ${catkin_LIBRARIES})
-add_dependencies(talker beginner_tutorials_generate_messages_cpp)
-
-add_executable(listener src/listener.cpp)
-target_link_libraries(listener ${catkin_LIBRARIES})
-add_dependencies(listener beginner_tutorials_generate_messages_cpp)
-
-add_executable(send_ball_pos src/send_ball_pos.cpp)
-target_link_libraries(send_ball_pos ${catkin_LIBRARIES} ${OpenCV_LIBS})
-add_dependencies(send_ball_pos opencv)
 
 add_executable(blob_error_pub src/blob_error_pub.cpp)
 target_link_libraries(blob_error_pub ${catkin_LIBRARIES} ${OpenCV_LIBS} ${realsense2_LIBRARY})

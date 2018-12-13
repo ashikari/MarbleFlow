@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>marble_flow</name>
+  <version>0.0.0</version>
+  <description>The marble_flow package</description>
+  <maintainer email="ashikari@mit.edu">Abbas Shikari</maintainer>
+  <license>Unlicense</license>
+  <url type="website">https://github.com/ashikari/MarbleFlow</url>
+  <author email="ashikari@mit.edu">Abbas Shikari</author>
+  <author email="nselby@mit.edu">Nicholas S. Selby</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>rospy</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_export_depend>roscpp</build_export_depend>
+  <build_export_depend>rospy</build_export_depend>
+  <build_export_depend>std_msgs</build_export_depend>
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>rospy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <export> </export>
+</package>

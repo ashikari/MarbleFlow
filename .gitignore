@@ -53,3 +53,9 @@ CATKIN_IGNORE
 # ROS Install
 src/.rosinstall
 src/.rosinstall.bak
+
+# Intera
+src/intera_common/
+src/intera_sdk/
+src/sawyer_pykdl/
+src/sawyer_robot/

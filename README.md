@@ -106,7 +106,7 @@ $ catkin_make
 $ cd src
 $ git clone https://github.com/rupumped/sawyer_pykdl.git
 $ cd ..
-$ catkin_make.
+$ catkin_make
 ```
 
 In addition to cloning the Intera repositories into the repository, you will also need to copy and customize the `intera.sh` script. To do so, enter the following commands into Terminal in the MarbleFlow directory. The following is adapted from http://sdk.rethinkrobotics.com/intera/Workstation_Setup.

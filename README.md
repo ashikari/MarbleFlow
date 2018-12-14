@@ -164,7 +164,6 @@ A window should appear on screen containing the video feed from the camera. If a
 |           +-- blob_error_pub.cpp    Reads camera video feed and calculates and publishes position error.
 |           +-- blob_tracker.hpp      Header file for high level CV algorithms.
 |           +-- go_to.py              Command motion to specific joint angles for Sawyer.
-|           +-- navigator.py          Command Sawyer with navigator on arm.
 |           +-- sawyer_comm.py        Receives position error from C++ and commands Sawyer to move.
 |
 +-- test                              Testing implementations of OpenCV algorithms in C++.

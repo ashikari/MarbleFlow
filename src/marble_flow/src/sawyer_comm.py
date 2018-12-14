@@ -67,8 +67,6 @@ class listener():
 		# Subscribing topics
 		rospy.Subscriber('/ball_error', Int32MultiArray, callback=self.rx_pos_error, queue_size=1)
 
-		navigator.right()
-
 	def set_endpoint_velocity(self, x):
 		q = np.matmul(self.kin.jacobian_pseudo_inverse(),x)
 		q_send = self.limb.joint_velocities();

@@ -2,24 +2,32 @@
 Optical marble tracker using a mobile camera
 
 ## Goal
+We completed two main functional goals. First, we build a ball tracking system that used threshold based object detection to locate the 2D centroid position of a ball in a video feed from a camera mounted on a Sawyer robot arm. The centroid position was subtracted from the image center position to provide an error signal in x, and y. This error signal was used as the reference signal for a velocity controller on Sawyer, thus enabling the robot arm to follow a ball around based on the camera input. The second algorithm we implemented was dense optical flow which we implemented on the full image. Taking an average of the dense optical flow gave velocity estimates of the camera motion which allowed us to recreate the estimated trajectory of the camera based purely on the video feed. To improve our results, we printed a checked background for the balls to travel over. The background was filtered out of the image before the object tracker was run to prevent erroneous detection.
 
 ## Methods
+![Algorithm Block Diagram](/block_diagram.png?raw=true)
+TODO: Abbas
 
 ## Hardware
+Computer | Dell Precision 7720
+Camera | Intel RealSense Depth Camera D435
+Robot Arm | RethinkRobotics Sawyer
 
 ## Software
 With the exception of the proprietary controller software integrated into the Sawyer contol computer, all software was tested using a Dell Precision 7720 running Ubuntu 16.04. The camera video feed was processed in C++ using OpenCV 3.3.1. As illustreated in the Methods section, the C++ code produced a position error vector from the ball to the center of the image. This error vector was communicated over the ROS framework as an Int32MultiArray to a short Python script which computes a basic PID velocity control effort from the position error vector and commands the Sawyer to move at the calcualted velocity using the RethinkRobotics Intera SDK.
 
 ## Results
+[![Results](https://img.youtube.com/vi/sgq_YhP6NFc/0.jpg)](https://www.youtube.com/watch?v=sgq_YhP6NFc)
 
 ## Future Work
+TODO: Abbas
 
 ## Installation Guide
 
 ### Install Dependencies
 Run all of the following in Terminal.
 
-#### ROS Dependencies
+#### ROS
 The following is adapted from http://sdk.rethinkrobotics.com/intera/Workstation_Setup.
 ```
 $ sudo sh -c ​ 'echo "deb http://packages.ros.org/ros/ubuntu xenial main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -80,7 +88,7 @@ $ sudo ldconfig
 ```
 
 #### RealSense Camera
-TODO: ABBAS
+TODO: Abbas
 
 ### Installation
 Run the following commands in Terminal in the directory in which you would like to keep MarbleFlow.
@@ -99,9 +107,9 @@ $ cd ..
 $ catkin_make.
 ```
 
-In addition to cloning the Intera repositories into the repository, you will also need to copy and customize the intera.sh script. To do so, enter the following commands into Terminal in the MarbleFlow directory. The following is adapted from http://sdk.rethinkrobotics.com/intera/Workstation_Setup.
+In addition to cloning the Intera repositories into the repository, you will also need to copy and customize the `intera.sh` script. To do so, enter the following commands into Terminal in the MarbleFlow directory. The following is adapted from http://sdk.rethinkrobotics.com/intera/Workstation_Setup.
 
-First, copy the intera.sh script.
+First, copy the `intera.sh` script.
 ```
 $ cp src/intera_sdk/intera.sh intera.sh
 ```

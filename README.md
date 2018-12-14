@@ -9,6 +9,8 @@ We completed two main functional goals. First, we build a ball tracking system t
 TODO: Abbas
 
 ## Hardware
+Component | Selected Hardware Implementation
+--------- | --------------------------------
 Computer | Dell Precision 7720
 Camera | Intel RealSense Depth Camera D435
 Robot Arm | RethinkRobotics Sawyer
@@ -38,7 +40,10 @@ $ sudo rosdep init
 $ rosdep update
 $ sudo apt-get install python-rosinstall
 $ sudo apt-get update
-$ sudo apt-get install git-core python-argparse python-wstool python-vcstools python-rosdep ros-kinetic-control-msgs ros-kinetic-joystick-drivers ros-kinetic-xacro ros-kinetic-tf2-ros ros-kinetic-rviz ros-kinetic-cv-bridge ros-kinetic-actionlib ros-kinetic-actionlib-msgs ros-kinetic-dynamic-reconfigure ros-kinetic-trajectory-msgs ros-kinetic-rospy-message-converter
+$ sudo apt-get install git-core python-argparse python-wstool python-vcstools python-rosdep ros-kinetic-control-msgs
+      ros-kinetic-joystick-drivers ros-kinetic-xacro ros-kinetic-tf2-ros ros-kinetic-rviz ros-kinetic-cv-bridge
+      ros-kinetic-actionlib ros-kinetic-actionlib-msgs ros-kinetic-dynamic-reconfigure ros-kinetic-trajectory-msgs
+      ros-kinetic-rospy-message-converter
 ```
 
 #### OpenCV

@@ -16,7 +16,7 @@ Camera | Intel RealSense Depth Camera D435
 Robot Arm | RethinkRobotics Sawyer
 
 ## Software
-With the exception of the proprietary controller software integrated into the Sawyer contol computer, all software was tested using a Dell Precision 7720 running Ubuntu 16.04. The camera video feed was processed in C++ using OpenCV 3.3.1. As illustreated in the Methods section, the C++ code produced a position error vector from the ball to the center of the image. This error vector was communicated over the ROS framework as an Int32MultiArray to a short Python script which computes a basic PID velocity control effort from the position error vector and commands the Sawyer to move at the calcualted velocity using the RethinkRobotics Intera SDK.
+With the exception of the proprietary controller software integrated into the Sawyer contol computer, all software was tested using a Dell Precision 7720 running Ubuntu 16.04. The camera video feed was processed in C++ using OpenCV 3.3.1. As illustreated in the Methods section, the C++ code produced a position error vector from the ball to the center of the image. This error vector was communicated over the ROS framework as an Int32MultiArray to a short Python script which computes a basic PID velocity control effort from the position error vector and commands the Sawyer to move at the calculated velocity using the RethinkRobotics Intera SDK.
 
 ## Results
 [![Results](https://img.youtube.com/vi/sgq_YhP6NFc/0.jpg)](https://www.youtube.com/watch?v=sgq_YhP6NFc)
@@ -88,9 +88,27 @@ $ sudo make install
 $ sudo sh -c 'echo "/usr/local/lib" >> /etc/ld.so.conf.d/opencv.conf'
 $ sudo ldconfig
 ```
+Use the following command to compile applications using openCV:
+```
+$ g++11 filename.cpp `pkg-config --cflags --libs opencv`
+```
 
 #### RealSense Camera
-TODO: Abbas
+The following is adapted from https://github.com/IntelRealSense/librealsense/blob/development/doc/distribution_linux.md. The code below is for Ubuntu 16 LTS, for installation instructions for other distributions please visit the link above.
+```
+$ sudo apt-key adv --keyserver keys.gnupg.net --recv-key C8B3A55A6F3EFCDE || sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key C8B3A55A6F3EFCDE
+$ sudo add-apt-repository "deb http://realsense-hw-public.s3.amazonaws.com/Debian/apt-repo xenial main" -u
+$ sudo rm -f /etc/apt/sources.list.d/realsense-public.list
+$ sudo apt-get update
+$ sudo apt-get install librealsense2-dkms
+$ sudo apt-get install librealsense2-utils
+$ sudo apt-get install librealsense2-dev
+$ sudo apt-get install librealsense2-dbg
+```
+Use the following command to compile applications using librealsense:
+```
+$ g++ -std=c++11 filename.cpp -lrealsense2
+```
 
 ### Installation
 Run the following commands in Terminal in the directory in which you would like to keep MarbleFlow.

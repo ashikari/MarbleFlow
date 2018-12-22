@@ -6,7 +6,7 @@ We completed two main functional goals. First, we build a ball tracking system t
 
 ## Methods
 ![Algorithm Block Diagram](/block_diagram.png?raw=true)
-TODO: Abbas
+
 
 ## Hardware
 Component | Selected Hardware Implementation
@@ -22,7 +22,12 @@ With the exception of the proprietary controller software integrated into the Sa
 [![Results](https://img.youtube.com/vi/sgq_YhP6NFc/0.jpg)](https://www.youtube.com/watch?v=sgq_YhP6NFc)
 
 ## Future Work
-TODO: Abbas
+The next step to extending this system is to extend the tracker to allow trajectory reconstruction of numerous balls. We imagine a system in which numerous balls are rolling on the board and the camera is strafing over the whole scene attaining measurements of all the balls that are within the camera's field of view. Using the combination of the set of measurements,a system propagation model for each ball, and a high fidelity odometry system we aim to reconstruct best estimates of the ball trajectories using sensor input that is largely independent of the apparatus producing the motion.
+
+This additional work requires building the following functionality:
+ - a color based ball classification algorithm to facilitate data association between measurements
+ - a model of ball motion (including wall collisions) to account for times when the ball is not in frame
+ - a more robust visual/inertial odometry system to reconstruct the camera motion from sensor input
 
 ## Installation Guide
 
